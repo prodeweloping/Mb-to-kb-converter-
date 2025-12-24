@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Size Reducer</title>
+  <link rel="icon" type="image/png" href="Pro.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <!-- Tailwind (for navbar/footer only) -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    :root{
+      --footer-height: 64px;
+    }
+
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    body{
+      background: linear-gradient(135deg,#1a2980 0%,#26d0ce 100%);
+      min-height:100vh;
+      display:flex;
+      flex-direction:column;
+      overflow-x:hidden;
+    }
+
+    /* ================= NAVBAR ================= */
+    nav{ position:fixed; top:0; left:0; right:0; z-index:50; }
+
+    /* ================= MAIN CONTAINER ================= */
+    .main-wrapper{
+      flex:1 0 auto;
+      padding-top:96px;
+      padding-bottom:calc(var(--footer-height) + 24px);
+    }
+
+    .container{
+      max-width:1200px;
+      margin:0 auto;
+      padding:20px;
+      color:#333;
+    }
+
+    header{
+      text-align:center;
+      margin-bottom:30px;
+      color:white;
+    }
+
+    header h1{
+      font-size:2.6rem;
+      margin-bottom:10px;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:12px;
+    }
+
+    header p{
+      max-width:800px;
+      margin:auto;
+      opacity:.9;
+    }
+
+    /* ================= APP UI ================= */
+    .app-container{
+      display:flex;
+      flex-wrap:wrap;
+      gap:30px;
+    }
+
+    .upload-section,.preview-section{
+      flex:1;
+      min-width:300px;
+      background:#fff;
+      border-radius:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.2);
+      overflow:hidden;
+    }
+
+    .section-title{
+      padding:18px;
+      background:linear-gradient(to right,#1a2980,#26d0ce);
+      color:white;
+      font-size:1.4rem;
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .section-content{ padding:22px; }
+
+    .upload-area{
+      border:3px dashed #26d0ce;
+      padding:40px 20px;
+      border-radius:12px;
+      text-align:center;
+      cursor:pointer;
+      transition:.3s;
+    }
+
+    .upload-area:hover{
+      background:rgba(38,208,206,.08);
+    }
+
+    .upload-icon{
+      font-size:3.8rem;
+      color:#26d0ce;
+      margin-bottom:12px;
+    }
+
+    input[type=file]{ display:none; }
+
+    .controls{ margin-top:25px; }
+
+    .control-group{ margin-bottom:22px; }
+
+    .control-label{
+      display:flex;
+      justify-content:space-between;
+      margin-bottom:8px;
+      font-weight:600;
+    }
+
+    input[type=range]{
+      width:100%;
+    }
+
+    .buttons{
+      display:flex;
+      gap:14px;
+      margin-top:22px;
+    }
+
+    .btn{
+      flex:1;
+      padding:15px;
+      border:none;
+      border-radius:8px;
+      font-weight:600;
+      cursor:pointer;
+      transition:.25s;
+    }
+
+    .btn-primary{
+      background:linear-gradient(to right,#1a2980,#26d0ce);
+      color:white;
+    }
+
+    .btn-secondary{
+      background:#eee;
+    }
+
+    .btn-primary:hover{ transform:translateY(-2px); }
+
+    #imagePreview{
+      max-width:100%;
+      max-height:280px;
+      border-radius:10px;
+      display:none;
+    }
+
+    .file-info{
+      background:#f8f9fa;
+      padding:15px;
+      border-radius:10px;
+      margin-top:18px;
+    }
+
+    .info-row{
+      display:flex;
+      justify-content:space-between;
+      padding:6px 0;
+      border-bottom:1px solid #e5e7eb;
+      font-size:.95rem;
+    }
+
+    .info-row:last-child{ border:none; }
+
+    .download-section{
+      text-align:center;
+      margin-top:20px;
+      display:none;
+    }
+
+    #downloadBtn{
+      display:inline-flex;
+      gap:10px;
+      align-items:center;
+      background:linear-gradient(to right,#2ecc71,#27ae60);
+      color:white;
+      padding:16px 26px;
+      border-radius:8px;
+      text-decoration:none;
+      font-weight:600;
+    }
+
+    /* ================= FOOTER ================= */
+    footer{
+      background:#111827;
+      color:white;
+      height:var(--footer-height);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      flex-shrink:0;
+    }
+
+    @media(max-width:768px){
+      footer{
+        position:fixed;
+        bottom:0;
+        left:0;
+        right:0;
+        z-index:40;
+      }
+      .buttons{ flex-direction:column; }
+      header h1{ font-size:2.1rem; }
+    }
+
+    /* ================= WHATSAPP ================= */
+    .whatsapp-btn{
+      width:46px;
+      height:46px;
+      border-radius:12px;
+      background:#25D366;
+      color:white;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 6px 18px rgba(0,0,0,.18);
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="bg-white shadow-sm">
+  <div class="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
+    <span class="text-xl font-bold text-indigo-600">
+      Pro <span class="text-gray-800">Developing</span>
+    </span>
+    <a id="waTop" class="whatsapp-btn" href="#">
+      <i class="fa-brands fa-whatsapp"></i>
+    </a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main-wrapper">
+  <div class="container">
+
+    <header>
+      <h1><i class="fas fa-compress-alt"></i> Image Size Reducer</h1>
+      <p>Reduce image size from MB to KB directly in your browser.</p>
+    </header>
+
+    <div class="app-container">
+
+      <!-- UPLOAD -->
+      <div class="upload-section">
+        <div class="section-title"><i class="fas fa-upload"></i> Upload</div>
+        <div class="section-content">
+          <div class="upload-area" id="uploadArea">
+            <div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+            <p>Click to upload image</p>
+            <small>JPG, PNG, WebP • Max 10MB</small>
+            <input type="file" id="imageInput" accept="image/*">
+          </div>
+
+          <div class="controls">
+            <div class="control-group">
+              <div class="control-label">
+                <span>Quality</span><span id="qVal">70%</span>
+              </div>
+              <input type="range" id="quality" min="10" max="95" value="70">
+            </div>
+
+            <div class="buttons">
+              <button class="btn btn-primary" id="resizeBtn">
+                <i class="fas fa-compress-alt"></i> Resize
+              </button>
+              <button class="btn btn-secondary" id="resetBtn">
+                <i class="fas fa-rotate"></i> Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="preview-section">
+        <div class="section-title"><i class="fas fa-image"></i> Preview</div>
+        <div class="section-content">
+          <img id="imagePreview">
+          <p id="noPreview" style="color:#777;padding:40px;text-align:center">
+            Preview will appear here
+          </p>
+
+          <div class="file-info">
+            <div class="info-row"><span>Original</span><span id="origSize">--</span></div>
+            <div class="info-row"><span>Resized</span><span id="newSize">--</span></div>
+          </div>
+
+          <div class="download-section" id="downloadSection">
+            <a id="downloadBtn" download="resized-image.jpg">
+              <i class="fas fa-download"></i> Download
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  © Powered by
+  <a href="https://mpdeveloping.github.io/mpwebsite/" target="_blank"
+     class="ml-1 text-indigo-400 underline">Pro Developing</a>
+</footer>
+
+<!-- FLOATING WHATSAPP -->
+<a id="waFloat" class="whatsapp-btn"
+   style="position:fixed;right:16px;bottom:calc(var(--footer-height) + 16px);z-index:60;">
+  <i class="fa-brands fa-whatsapp fa-lg"></i>
+</a>
+
+<script>
+const uploadArea=document.getElementById('uploadArea');
+const imageInput=document.getElementById('imageInput');
+const preview=document.getElementById('imagePreview');
+const noPreview=document.getElementById('noPreview');
+const quality=document.getElementById('quality');
+const qVal=document.getElementById('qVal');
+const resizeBtn=document.getElementById('resizeBtn');
+const resetBtn=document.getElementById('resetBtn');
+const downloadSection=document.getElementById('downloadSection');
+const downloadBtn=document.getElementById('downloadBtn');
+const origSize=document.getElementById('origSize');
+const newSize=document.getElementById('newSize');
+
+let originalImg;
+
+uploadArea.onclick=()=>imageInput.click();
+
+quality.oninput=()=>qVal.innerText=quality.value+'%';
+
+imageInput.onchange=e=>{
+  const file=e.target.files[0];
+  if(!file)return;
+  origSize.innerText=(file.size/1024).toFixed(1)+' KB';
+  const reader=new FileReader();
+  reader.onload=()=>{
+    originalImg=new Image();
+    originalImg.onload=()=>{
+      preview.src=reader.result;
+      preview.style.display='block';
+      noPreview.style.display='none';
+    };
+    originalImg.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+resizeBtn.onclick=()=>{
+  if(!originalImg)return alert('Upload image first');
+  const canvas=document.createElement('canvas');
+  canvas.width=originalImg.width;
+  canvas.height=originalImg.height;
+  const ctx=canvas.getContext('2d');
+  ctx.drawImage(originalImg,0,0);
+  const data=canvas.toDataURL('image/jpeg',quality.value/100);
+  preview.src=data;
+  downloadBtn.href=data;
+  newSize.innerText=(data.length/1024).toFixed(1)+' KB';
+  downloadSection.style.display='block';
+};
+
+resetBtn.onclick=()=>location.reload();
+
+// WhatsApp
+const wa='916356952788';
+const msg=encodeURIComponent('Hello! I am using your Image Size Reducer 😊');
+document.getElementById('waTop').onclick=e=>{e.preventDefault();window.open(`https://wa.me/${wa}?text=${msg}`)};
+document.getElementById('waFloat').onclick=e=>{e.preventDefault();window.open(`https://wa.me/${wa}?text=${msg}`)};
+</script>
+
+</body>
+  </html>
